@@ -11,7 +11,7 @@ remediation plan, with a **programmatic faithfulness check** and a **model-compa
 harness** — not a demo that "looks right", one that's actually checked.
 
 > **Status: early stage.** Built on evenings/weekends. Prompt construction, response parsing and
-> the faithfulness check are verified against a stubbed client (98% test coverage, `ruff`/`mypy
+> the faithfulness check are verified against a stubbed client (99% test coverage, `ruff`/`mypy
 > --strict`/`bandit`/`pip-audit` all clean) — a live run against the real Anthropic API, and a real
 > `docs/eval-report.md`, need `ANTHROPIC_API_KEY` set and haven't been recorded yet.
 
@@ -82,10 +82,11 @@ export ANTHROPIC_API_KEY=sk-ant-...
 
 A **user-scoped** key (one created against your account rather than a specific workspace — the
 Anthropic Console marks these `Scope: Organization`) gets a 400 ("not scoped to a workspace")
-unless you also set:
+unless the request carries an `anthropic-workspace-id` header. The `anthropic` SDK already reads
+that from `ANTHROPIC_CUSTOM_HEADERS` with no code needed on this project's side:
 
 ```bash
-export ANTHROPIC_WORKSPACE_ID=wrkspc_...   # Console → Organization settings → Workspaces → your workspace's ID
+export ANTHROPIC_CUSTOM_HEADERS="anthropic-workspace-id: wrkspc_..."   # Console → Organization settings → Workspaces → your workspace's ID
 ```
 
 A key already scoped to one workspace doesn't need this.

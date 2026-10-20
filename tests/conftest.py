@@ -17,6 +17,20 @@ def make_response(tool_input: dict[str, Any], *, input_tokens: int = 10, output_
     )
 
 
+def faithful_response(**kwargs: Any) -> Any:
+    """A `StubMessagesClient(faithful_response)` always cites every blocker in the
+    prompt exactly once, in order — so any fixture/model pair passed through it
+    passes `faithfulness.check()`. Used by tests that only care about exercising
+    the rest of a code path (CLI wiring, the eval runner/report) and don't want to
+    hand-write a per-test response for every blocker count."""
+    prompt = kwargs["messages"][0]["content"]
+    n_blockers = prompt.count("\n[")  # one "[<i>] source=..." line per blocker
+    steps = [
+        {"blocker_index": i, "priority": i + 1, "rationale": f"fix #{i}"} for i in range(n_blockers)
+    ]
+    return make_response({"summary": "ok", "steps": steps})
+
+
 class StubMessagesClient:
     """Implements the narrow `MessagesClient` protocol. `respond_with` is
     either a fixed response, or a callable `(**kwargs) -> response` for tests

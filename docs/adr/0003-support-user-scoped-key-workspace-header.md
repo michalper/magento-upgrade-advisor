@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted.
+Superseded by [ADR 0004](0004-use-sdk-native-anthropic-custom-headers.md) — the `anthropic` SDK
+already reads the same header from its own `ANTHROPIC_CUSTOM_HEADERS` env var, so the bespoke
+`ANTHROPIC_WORKSPACE_ID` handling this ADR introduced was removed rather than kept or tested.
 
 ## Context
 
@@ -28,7 +30,7 @@ Alternatives rejected:
   Rejected — that's real advice (see the README note this ADR also added), but it doesn't help
   someone who already has a user-scoped key and no reason yet to know the difference matters;
   supporting the header costs four lines and a docstring, handling it on the client's side
-  wherever this happens is cheaper than a supportannouncement.
+  wherever this happens is cheaper than a support announcement.
 - **Hardcode a workspace ID.** Never considered — a workspace ID is per-account, so hardcoding one
   would break for anyone except the original author's own account.
 

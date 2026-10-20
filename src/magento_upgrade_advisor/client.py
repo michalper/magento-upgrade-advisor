@@ -7,7 +7,6 @@ prompt/parsing logic construct a stub directly and never import this module.
 
 from __future__ import annotations
 
-import os
 from typing import cast
 
 import anthropic
@@ -22,13 +21,12 @@ def default_client() -> MessagesClient:
 
     A user-scoped key (as opposed to a key generated for a specific workspace)
     gets a 400 from the API ("not scoped to a workspace") unless the request
-    carries an `anthropic-workspace-id` header — read from `ANTHROPIC_WORKSPACE_ID`
-    if set, omitted otherwise (a normal workspace-scoped key doesn't need it)."""
-    workspace_id = os.environ.get("ANTHROPIC_WORKSPACE_ID")
-    default_headers = {"anthropic-workspace-id": workspace_id} if workspace_id else None
-
+    carries an `anthropic-workspace-id` header. The SDK already reads that from
+    `ANTHROPIC_CUSTOM_HEADERS` (one "Header: value" per line) with no code needed
+    here — see the README's install section — so this function doesn't special-case
+    it itself."""
     # anthropic.Messages.create is a multi-overload signature (streaming vs not);
     # our narrower MessagesClient protocol is what advisor.py actually calls it
     # with, so this is a real runtime match even though mypy can't verify the
     # overloaded SDK type against a plain **kwargs Protocol.
-    return cast(MessagesClient, anthropic.Anthropic(default_headers=default_headers).messages)
+    return cast(MessagesClient, anthropic.Anthropic().messages)

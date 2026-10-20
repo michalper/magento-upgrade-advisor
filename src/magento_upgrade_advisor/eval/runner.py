@@ -12,10 +12,6 @@ from ..advisor import MessagesClient, explain
 from ..faithfulness import FaithfulnessResult
 from ..models import PlanView
 
-_EMPTY_FAITHFULNESS = FaithfulnessResult(
-    ok=False, missing_indices=(), fabricated_indices=(), duplicate_indices=()
-)
-
 
 @dataclass(frozen=True)
 class EvalResult:
@@ -37,32 +33,26 @@ def run(
     for name, plan_view in fixtures.items():
         for model in models:
             start = time.monotonic()
+            faith = FaithfulnessResult(
+                ok=False, missing_indices=(), fabricated_indices=(), duplicate_indices=()
+            )
+            input_tokens, output_tokens, error = 0, 0, None
             try:
                 remediation = explain(plan_view, client=client, model=model)
-                elapsed = time.monotonic() - start
                 faith = faithfulness.check(plan_view, remediation)
-                results.append(
-                    EvalResult(
-                        fixture_name=name,
-                        model=model,
-                        faithfulness=faith,
-                        input_tokens=remediation.input_tokens,
-                        output_tokens=remediation.output_tokens,
-                        latency_seconds=elapsed,
-                        error=None,
-                    )
-                )
+                input_tokens = remediation.input_tokens
+                output_tokens = remediation.output_tokens
             except Exception as exc:
-                elapsed = time.monotonic() - start
-                results.append(
-                    EvalResult(
-                        fixture_name=name,
-                        model=model,
-                        faithfulness=_EMPTY_FAITHFULNESS,
-                        input_tokens=0,
-                        output_tokens=0,
-                        latency_seconds=elapsed,
-                        error=str(exc),
-                    )
+                error = str(exc)
+            results.append(
+                EvalResult(
+                    fixture_name=name,
+                    model=model,
+                    faithfulness=faith,
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                    latency_seconds=time.monotonic() - start,
+                    error=error,
                 )
+            )
     return results

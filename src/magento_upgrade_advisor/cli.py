@@ -35,8 +35,13 @@ def _cmd_explain(args: argparse.Namespace) -> int:
 
     print(f"# {remediation.summary}\n")
     for step in sorted(remediation.steps, key=lambda s: s.priority):
-        blocker = plan_view.blockers[step.blocker_index]
-        print(f"{step.priority}. [{blocker.source}] {blocker.description} — {step.rationale}")
+        # step.blocker_index is model output faithfulness.check() below may flag as
+        # fabricated — don't trust it as a valid index before that check runs.
+        if 0 <= step.blocker_index < len(plan_view.blockers):
+            blocker = plan_view.blockers[step.blocker_index]
+            print(f"{step.priority}. [{blocker.source}] {blocker.description} — {step.rationale}")
+        else:
+            print(f"{step.priority}. [unknown blocker #{step.blocker_index}] {step.rationale}")
 
     if not result.ok:
         print("\n!! faithfulness check FAILED", file=sys.stderr)

@@ -8,10 +8,26 @@ a minor bump means new features, a patch means fixes only).
 
 ## [Unreleased]
 
-### Added
-- `ANTHROPIC_WORKSPACE_ID` support in `client.default_client()` for user-scoped API keys, which
-  the real API rejects with a 400 otherwise — found via a live run, not by the stubbed test suite
-  (see ADR 0003).
+### Fixed
+- A user-scoped API key gets a 400 from the real API ("not scoped to a workspace") unless the
+  request carries an `anthropic-workspace-id` header — found via a live run, not by the stubbed
+  test suite. Initially handled with a project-private `ANTHROPIC_WORKSPACE_ID` env var (ADR
+  0003), then replaced with the `anthropic` SDK's own `ANTHROPIC_CUSTOM_HEADERS` mechanism, which
+  already supported this with no project code needed (ADR 0004, superseding 0003) — see the
+  README's install section for the env var to set.
+- `cli.py`'s `explain` rendering loop indexed `plan_view.blockers[step.blocker_index]` directly,
+  before the faithfulness check that flags exactly this as a fabricated index ever ran — a model
+  citing an out-of-range index crashed with a raw `IndexError` instead of reaching the "faithfulness
+  check FAILED" reporting path. Now renders `[unknown blocker #N]` for an invalid index and lets
+  the faithfulness check below report it properly.
+
+### Changed
+- Deduplicated the scripted "cite every blocker, in order" stub response (previously copy-pasted
+  across `tests/test_eval.py` and twice in `tests/test_cli.py`) into one `faithful_response()`
+  helper in `tests/conftest.py`.
+- `eval/runner.py`'s `run()` no longer constructs `EvalResult` twice (once per try/except branch)
+  for a cosmetic difference — the four values that vary are set in the try/except, `EvalResult` is
+  built once after it.
 
 ## [0.1.0] - 2026-10-20
 
