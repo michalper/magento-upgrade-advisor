@@ -80,6 +80,16 @@ pip install magento-upgrade-advisor
 export ANTHROPIC_API_KEY=sk-ant-...
 ```
 
+A **user-scoped** key (one created against your account rather than a specific workspace — the
+Anthropic Console marks these `Scope: Organization`) gets a 400 ("not scoped to a workspace")
+unless you also set:
+
+```bash
+export ANTHROPIC_WORKSPACE_ID=wrkspc_...   # Console → Organization settings → Workspaces → your workspace's ID
+```
+
+A key already scoped to one workspace doesn't need this.
+
 ## Use
 
 ```bash

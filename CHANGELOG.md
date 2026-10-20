@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/) (pre-1.0:
 a minor bump means new features, a patch means fixes only).
 
+## [Unreleased]
+
+### Added
+- `ANTHROPIC_WORKSPACE_ID` support in `client.default_client()` for user-scoped API keys, which
+  the real API rejects with a 400 otherwise — found via a live run, not by the stubbed test suite
+  (see ADR 0003).
+
 ## [0.1.0] - 2026-10-20
 
 ### Added
